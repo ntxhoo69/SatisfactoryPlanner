@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows. Shapes;
 using SatisfactoryPlanner.Models;
@@ -13,6 +14,9 @@ public class BuildingVisual : Canvas
         
         public Building Building { get; private set; }
         private Rectangle buildingRect;
+        
+        // Event raised when a port is clicked
+        public event EventHandler<PortClickedEventArgs>? PortClicked;
         
         public BuildingVisual(Building building)
         {
@@ -70,8 +74,15 @@ public class BuildingVisual : Canvas
                 Height = portPixelSize,
                 Fill = GetPortColor(port),
                 Stroke = port.Type == PortType.Input ? Brushes.OrangeRed : Brushes.ForestGreen,
-                StrokeThickness = 2
+                StrokeThickness = 2,
+                Cursor = Cursors.Hand
             };
+            
+            // Store port reference in Tag for click handling
+            portCircle.Tag = port;
+            
+            // Add click event handler
+            portCircle.MouseLeftButtonDown += PortCircle_MouseLeftButtonDown;
             
             Canvas.SetLeft(portCircle, x);
             Canvas. SetTop(portCircle, y);
@@ -108,4 +119,29 @@ public class BuildingVisual : Canvas
             buildingRect. Stroke = highlighted ? Brushes. Yellow : Brushes.White;
             buildingRect.StrokeThickness = highlighted ? 3 : 2;
         }
+        
+        private void PortCircle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Ellipse ellipse && ellipse.Tag is IOPort port)
+            {
+                // Raise the PortClicked event
+                PortClicked?.Invoke(this, new PortClickedEventArgs(Building, port));
+                e.Handled = true; // Prevent event from bubbling up
+            }
+        }
     }
+
+/// <summary>
+/// Event arguments for port click events
+/// </summary>
+public class PortClickedEventArgs : EventArgs
+{
+    public Building Building { get; }
+    public IOPort Port { get; }
+    
+    public PortClickedEventArgs(Building building, IOPort port)
+    {
+        Building = building;
+        Port = port;
+    }
+}
