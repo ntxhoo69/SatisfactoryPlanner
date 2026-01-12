@@ -25,4 +25,22 @@ public class Building
             Position.Y + port.RelativePosition.Y
         );
     }
+    
+    /// <summary>
+    /// Gets the facing direction of a port, accounting for building rotation.
+    /// For now, only supports rotation=0. Can be extended for 90/180/270 degree rotations.
+    /// </summary>
+    public Dir GetPortFacing(IOPort port)
+    {
+        // TODO: Apply rotation transformation when building rotation is implemented
+        // For rotation=0, just return the port's facing directly
+        if (Math.Abs(Rotation) < 0.01)
+        {
+            return port.Facing;
+        }
+        
+        // For future: rotate the facing by the building rotation
+        // e.g., 90° rotation: Up -> Right, Right -> Down, Down -> Left, Left -> Up
+        return port.Facing;
+    }
 }

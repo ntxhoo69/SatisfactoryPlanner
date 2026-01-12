@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using SatisfactoryPlanner.Models;
@@ -7,13 +10,14 @@ namespace SatisfactoryPlanner.Controls;
 
 /// <summary>
 /// Visual representation of a conveyor belt on the canvas.
-/// Draws a line between the source and target ports.
+/// Draws an orthogonal (axis-aligned) path between the source and target ports.
 /// </summary>
-public class ConveyorBeltVisual : Polyline
+public class ConveyorBeltVisual : Canvas
 {
     private const double GridSize = 20; // pixels per meter (must match MainWindow)
     
     public ConveyorBelt ConveyorBelt { get; private set; }
+    private Path beltPath;
     
     public ConveyorBeltVisual(ConveyorBelt conveyorBelt)
     {
@@ -24,41 +28,54 @@ public class ConveyorBeltVisual : Polyline
     private void CreateVisual()
     {
         // Get absolute positions in meters
-        Point start = ConveyorBelt.StartPosition;
-        Point end = ConveyorBelt.EndPosition;
+        Point startMeters = ConveyorBelt.StartPosition;
+        Point endMeters = ConveyorBelt.EndPosition;
+        
+        // Get port facing directions
+        Dir startFacing = ConveyorBelt.SourceBuilding.GetPortFacing(ConveyorBelt.SourcePort);
+        Dir endFacing = ConveyorBelt.TargetBuilding.GetPortFacing(ConveyorBelt.TargetPort);
         
         // Convert to pixel coordinates
-        Point startPixels = new Point(start.X * GridSize, start.Y * GridSize);
-        Point endPixels = new Point(end.X * GridSize, end.Y * GridSize);
+        Point startPixels = new Point(startMeters.X * GridSize, startMeters.Y * GridSize);
+        Point endPixels = new Point(endMeters.X * GridSize, endMeters.Y * GridSize);
         
-        // Create a simple polyline with a slight curve for visual appeal
-        // Using a 3-point line with a middle control point
-        double midX = (startPixels.X + endPixels.X) / 2;
-        double midY = (startPixels.Y + endPixels.Y) / 2;
+        // Compute orthogonal route
+        List<Point> routePoints = BeltRouter.ComputeOrthogonalRoute(
+            startPixels, 
+            endPixels, 
+            startFacing, 
+            endFacing, 
+            GridSize
+        );
         
-        // Offset the middle point perpendicular to the line for a slight curve
-        double dx = endPixels.X - startPixels.X;
-        double dy = endPixels.Y - startPixels.Y;
-        double length = Math.Sqrt(dx * dx + dy * dy);
+        // Create path geometry
+        PathGeometry geometry = new PathGeometry();
         
-        if (length > 0)
+        if (routePoints.Count >= 2)
         {
-            // Perpendicular offset (5% of distance)
-            double offsetAmount = length * 0.05;
-            double perpX = -dy / length * offsetAmount;
-            double perpY = dx / length * offsetAmount;
+            PathFigure figure = new PathFigure
+            {
+                StartPoint = routePoints[0],
+                IsClosed = false
+            };
             
-            midX += perpX;
-            midY += perpY;
+            // Add line segments for each point
+            for (int i = 1; i < routePoints.Count; i++)
+            {
+                figure.Segments.Add(new LineSegment(routePoints[i], true));
+            }
+            
+            geometry.Figures.Add(figure);
         }
         
-        // Set polyline points
-        this.Points = new PointCollection
+        // Create or update the path
+        if (beltPath == null)
         {
-            startPixels,
-            new Point(midX, midY),
-            endPixels
-        };
+            beltPath = new Path();
+            this.Children.Add(beltPath);
+        }
+        
+        beltPath.Data = geometry;
         
         // Style the conveyor belt based on resource type
         Color beltColor = ConveyorBelt.SourcePort.ResourceType switch
@@ -68,14 +85,12 @@ public class ConveyorBeltVisual : Polyline
             _ => Colors.Orange
         };
         
-        this.Stroke = new SolidColorBrush(beltColor);
-        this.StrokeThickness = 3;
-        this.StrokeLineJoin = PenLineJoin.Round;
-        this.StrokeStartLineCap = PenLineCap.Round;
-        this.StrokeEndLineCap = PenLineCap.Round;
-        
-        // Add slight opacity for better visual layering
-        this.Opacity = 0.8;
+        beltPath.Stroke = new SolidColorBrush(beltColor);
+        beltPath.StrokeThickness = 3;
+        beltPath.StrokeLineJoin = PenLineJoin.Round;
+        beltPath.StrokeStartLineCap = PenLineCap.Round;
+        beltPath.StrokeEndLineCap = PenLineCap.Round;
+        beltPath.Opacity = 0.8;
     }
     
     /// <summary>
