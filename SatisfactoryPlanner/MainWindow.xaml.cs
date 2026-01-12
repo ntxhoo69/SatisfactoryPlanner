@@ -698,7 +698,7 @@ namespace SatisfactoryPlanner
             
             // Remove any conveyor belts connected to this building
             var connectedBelts = conveyorBelts
-                .Where(belt => belt.SourceBuilding == selectedBuilding || belt.TargetBuilding == selectedBuilding)
+                .Where(belt => belt.SourceBuilding.Id == selectedBuilding.Id || belt.TargetBuilding.Id == selectedBuilding.Id)
                 .ToList();
                 
             foreach (var belt in connectedBelts)

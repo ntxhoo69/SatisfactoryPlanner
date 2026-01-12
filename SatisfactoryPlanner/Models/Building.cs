@@ -44,40 +44,37 @@ public class Building
         if (rotation == 0)
             return point;
             
-        // Normalize rotation to 0, 90, 180, or 270
-        int rotationSteps = ((int)(rotation / 90)) % 4;
-        if (rotationSteps < 0) rotationSteps += 4;
+        int rotationSteps = NormalizeRotationSteps(rotation);
         
         double x = point.X;
         double y = point.Y;
+        double centerX = width / 2.0;
+        double centerY = height / 2.0;
         
+        // Translate to origin
+        x -= centerX;
+        y -= centerY;
+        
+        // Apply rotation steps (each step is 90 degrees clockwise)
         for (int i = 0; i < rotationSteps; i++)
         {
-            // Rotate 90 degrees clockwise around building center
-            double tempX = x;
-            double tempY = y;
-            
-            // Translate to origin (center of building)
-            double centerX = width / 2.0;
-            double centerY = height / 2.0;
-            tempX -= centerX;
-            tempY -= centerY;
-            
             // Rotate 90 degrees clockwise: (x, y) -> (y, -x)
-            double newX = tempY;
-            double newY = -tempX;
-            
-            // Translate back, but swap width and height for 90/270 rotations
-            if (i % 2 == 0)
-            {
-                x = newX + centerY;
-                y = newY + centerX;
-            }
-            else
-            {
-                x = newX + centerX;
-                y = newY + centerY;
-            }
+            double tempX = y;
+            double tempY = -x;
+            x = tempX;
+            y = tempY;
+        }
+        
+        // Translate back - note: for 90/270 rotations, width and height are swapped
+        if (rotationSteps % 2 == 1)
+        {
+            x += centerY;  // Swapped
+            y += centerX;  // Swapped
+        }
+        else
+        {
+            x += centerX;
+            y += centerY;
         }
         
         return new Point(x, y);
@@ -91,9 +88,7 @@ public class Building
         if (rotation == 0)
             return direction;
             
-        // Normalize rotation to 0, 90, 180, or 270
-        int rotationSteps = ((int)(rotation / 90)) % 4;
-        if (rotationSteps < 0) rotationSteps += 4;
+        int rotationSteps = NormalizeRotationSteps(rotation);
         
         Dir result = direction;
         for (int i = 0; i < rotationSteps; i++)
@@ -110,6 +105,16 @@ public class Building
         }
         
         return result;
+    }
+    
+    /// <summary>
+    /// Normalizes rotation angle to steps (0-3) where each step is 90 degrees.
+    /// </summary>
+    private int NormalizeRotationSteps(double rotation)
+    {
+        int rotationSteps = ((int)(rotation / 90)) % 4;
+        if (rotationSteps < 0) rotationSteps += 4;
+        return rotationSteps;
     }
     
     /// <summary>

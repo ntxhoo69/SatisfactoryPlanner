@@ -147,8 +147,7 @@ public class BuildingVisual : Canvas
         /// </summary>
         public void UpdateVisual()
         {
-            this.Children.Clear();
-            CreateVisual();
+            // Only update rotation transform, don't rebuild entire visual
             ApplyRotation();
         }
         
