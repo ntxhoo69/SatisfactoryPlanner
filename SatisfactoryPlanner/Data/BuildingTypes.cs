@@ -80,7 +80,7 @@ public static class BuildingTypes
 
     private static BuildingType ConvertToBuildingType(BuildingTypeDto dto)
     {
-        return new BuildingType
+        var buildingType = new BuildingType
         {
             Id = dto.Id,
             Name = dto.Name,
@@ -89,6 +89,48 @@ public static class BuildingTypes
             Color = ParseColor(dto.Color),
             Ports = dto.Ports.Select(ConvertToIOPort).ToList()
         };
+        
+        // Compute facing direction for each port based on its position on the building
+        foreach (var port in buildingType.Ports)
+        {
+            port.Facing = ComputePortFacing(port.RelativePosition, buildingType.WidthMeters, buildingType.HeightMeters);
+        }
+        
+        return buildingType;
+    }
+    
+    /// <summary>
+    /// Computes the facing direction of a port based on its position relative to the building edges.
+    /// Ports on the left edge face left, right edge face right, top face up, bottom face down.
+    /// </summary>
+    private static Dir ComputePortFacing(Point portPosition, double buildingWidth, double buildingHeight)
+    {
+        const double tolerance = 0.1; // meters tolerance for edge detection
+        
+        double x = portPosition.X;
+        double y = portPosition.Y;
+        
+        // Calculate distances to each edge
+        double distToLeft = Math.Abs(x);
+        double distToRight = Math.Abs(x - buildingWidth);
+        double distToTop = Math.Abs(y);
+        double distToBottom = Math.Abs(y - buildingHeight);
+        
+        // Find the minimum distance to determine which edge the port is on
+        double minDist = Math.Min(Math.Min(distToLeft, distToRight), Math.Min(distToTop, distToBottom));
+        
+        // Determine facing based on closest edge
+        if (Math.Abs(minDist - distToLeft) < tolerance)
+            return Dir.Left;
+        if (Math.Abs(minDist - distToRight) < tolerance)
+            return Dir.Right;
+        if (Math.Abs(minDist - distToTop) < tolerance)
+            return Dir.Up;
+        if (Math.Abs(minDist - distToBottom) < tolerance)
+            return Dir.Down;
+        
+        // Default to right if we can't determine (shouldn't happen with valid data)
+        return Dir.Right;
     }
 
     private static IOPort ConvertToIOPort(IOPortDto dto)
@@ -97,7 +139,8 @@ public static class BuildingTypes
         var resourceType = ParseEnumOrThrow<ResourceType>(dto.ResourceType, nameof(dto.ResourceType));
 
         var position = new Point(dto.X, dto.Y);
-        return new IOPort(portType, resourceType, position, dto.Label);
+        var facing = Dir.Right; // Default, will be overridden by ComputePortFacing
+        return new IOPort(portType, resourceType, position, dto.Label, facing);
     }
 
     private static TEnum ParseEnumOrThrow<TEnum>(string? value, string fieldName)
