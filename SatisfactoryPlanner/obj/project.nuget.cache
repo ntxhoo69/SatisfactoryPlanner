@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "FIAGZLLxuYU=",
+  "dgSpecHash": "XGH9am6puiE=",
   "success": true,
-  "projectFilePath": "C:\\Users\\bedynelu\\Documents\\RIDER .NET\\SatisfactoryPlanner\\SatisfactoryPlanner\\SatisfactoryPlanner.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "/home/runner/work/SatisfactoryPlanner/SatisfactoryPlanner/SatisfactoryPlanner/SatisfactoryPlanner.csproj",
+  "expectedPackageFiles": [
+    "/home/runner/work/SatisfactoryPlanner/.codeql-scratch/dbs/csharp/working/packages/microsoft.netcore.app.ref/9.0.11/microsoft.netcore.app.ref.9.0.11.nupkg.sha512",
+    "/home/runner/work/SatisfactoryPlanner/.codeql-scratch/dbs/csharp/working/packages/microsoft.windowsdesktop.app.ref/9.0.11/microsoft.windowsdesktop.app.ref.9.0.11.nupkg.sha512",
+    "/home/runner/work/SatisfactoryPlanner/.codeql-scratch/dbs/csharp/working/packages/microsoft.aspnetcore.app.ref/9.0.11/microsoft.aspnetcore.app.ref.9.0.11.nupkg.sha512",
+    "/home/runner/work/SatisfactoryPlanner/.codeql-scratch/dbs/csharp/working/packages/microsoft.netcore.app.host.linux-x64/9.0.11/microsoft.netcore.app.host.linux-x64.9.0.11.nupkg.sha512"
+  ],
   "logs": []
 }

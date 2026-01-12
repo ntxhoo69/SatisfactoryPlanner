@@ -31,6 +31,12 @@ namespace SatisfactoryPlanner
         private BuildingType selectedBuildingType = null;
         private BuildingVisual previewBuilding = null;
         private bool isPlacingMode = false;
+        
+        // Conveyor belt management
+        private List<ConveyorBelt> conveyorBelts = new List<ConveyorBelt>();
+        private bool isPlacingConveyor = false;
+        private Building? conveyorSourceBuilding = null;
+        private IOPort? conveyorSourcePort = null;
 
         public MainWindow()
         {
@@ -197,6 +203,7 @@ namespace SatisfactoryPlanner
                 buildings.Add(newBuilding);
         
                 BuildingVisual visual = new BuildingVisual(newBuilding);
+                visual.PortClicked += BuildingVisual_PortClicked; // Subscribe to port click events
                 Canvas.SetLeft(visual, gridPosition.X * GridSize);
                 Canvas.SetTop(visual, gridPosition.Y * GridSize);
                 MainCanvas.Children.Add(visual);
@@ -309,24 +316,37 @@ namespace SatisfactoryPlanner
             }
     
             Canvas.SetLeft(previewBuilding, gridPosition.X * GridSize);
-            Canvas.SetTop(previewBuilding, gridPosition. Y * GridSize);
+            Canvas.SetTop(previewBuilding, gridPosition.Y * GridSize);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
 
-            if (e.Key == Key.Escape && isPlacingMode)
+            if (e.Key == Key.Escape)
             {
-                isPlacingMode = false;
-                selectedBuildingType = null;
-                if (previewBuilding != null)
+                // Cancel building placement
+                if (isPlacingMode)
                 {
-                    MainCanvas.Children.Remove(previewBuilding);
-                    previewBuilding = null;
+                    isPlacingMode = false;
+                    selectedBuildingType = null;
+                    if (previewBuilding != null)
+                    {
+                        MainCanvas.Children.Remove(previewBuilding);
+                        previewBuilding = null;
+                    }
+                    MainCanvas.Cursor = Cursors.Arrow;
                 }
-
-                MainCanvas.Cursor = Cursors.Arrow;
+                
+                // Cancel conveyor placement
+                if (isPlacingConveyor)
+                {
+                    isPlacingConveyor = false;
+                    conveyorSourceBuilding = null;
+                    conveyorSourcePort = null;
+                    MainCanvas.Cursor = Cursors.Arrow;
+                    UpdateStatusText("Ready");
+                }
             }
 
             //if (e.Key == Key.LeftAlt && e.Key == Key.LeftShift && e.Key == Key.R && e.Key == Key.T && e.Key == Key.N);
@@ -379,6 +399,174 @@ namespace SatisfactoryPlanner
                 btn.Click += SelectBuilding_Click;
                 BuildingToolBar.Items.Add(btn);
             }
+            
+            // Add separator
+            BuildingToolBar.Items.Add(new Separator());
+            
+            // Add conveyor belt button
+            Button conveyorBtn = new Button
+            {
+                Content = "Place Conveyor Belt",
+                Padding = new Thickness(5),
+                Margin = new Thickness(2),
+                HorizontalContentAlignment = HorizontalAlignment.Left,
+                MinWidth = 150,
+                Background = new SolidColorBrush(Color.FromRgb(100, 100, 50))
+            };
+            conveyorBtn.Click += PlaceConveyor_Click;
+            BuildingToolBar.Items.Add(conveyorBtn);
+        }
+        
+        // ========== Conveyor Belt Management Methods ==========
+        
+        /// <summary>
+        /// Enters conveyor placement mode
+        /// </summary>
+        private void PlaceConveyor_Click(object sender, RoutedEventArgs e)
+        {
+            // Cancel any building placement
+            if (isPlacingMode)
+            {
+                CancelPlacement_Click(sender, e);
+            }
+            
+            isPlacingConveyor = true;
+            conveyorSourceBuilding = null;
+            conveyorSourcePort = null;
+            MainCanvas.Cursor = Cursors.Cross;
+            UpdateStatusText("Conveyor Placement: Click on an OUTPUT port to start");
+        }
+        
+        /// <summary>
+        /// Handles port click events from BuildingVisual
+        /// </summary>
+        private void BuildingVisual_PortClicked(object? sender, PortClickedEventArgs e)
+        {
+            if (!isPlacingConveyor) return;
+            
+            // First click - select source port
+            if (conveyorSourceBuilding == null)
+            {
+                StartConveyorPlacementFromPort(e.Building, e.Port);
+            }
+            // Second click - select target port
+            else
+            {
+                CompleteConveyorPlacementToPort(e.Building, e.Port);
+            }
+        }
+        
+        /// <summary>
+        /// Starts conveyor placement from a port
+        /// </summary>
+        private void StartConveyorPlacementFromPort(Building building, IOPort port)
+        {
+            // Validate that source port is an Output
+            if (port.Type != PortType.Output)
+            {
+                MessageBox.Show("First port must be an OUTPUT port!", "Invalid Port Selection", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            
+            conveyorSourceBuilding = building;
+            conveyorSourcePort = port;
+            UpdateStatusText("Conveyor Placement: Now click on an INPUT port to complete the connection");
+        }
+        
+        /// <summary>
+        /// Completes conveyor placement to a target port
+        /// </summary>
+        private void CompleteConveyorPlacementToPort(Building building, IOPort port)
+        {
+            if (conveyorSourceBuilding == null || conveyorSourcePort == null) return;
+            
+            // Validate that target port is an Input
+            if (port.Type != PortType.Input)
+            {
+                MessageBox.Show("Second port must be an INPUT port!", "Invalid Port Selection", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                ResetConveyorPlacement();
+                return;
+            }
+            
+            // Prevent connecting a port to itself
+            if (building == conveyorSourceBuilding && port == conveyorSourcePort)
+            {
+                MessageBox.Show("Cannot connect a port to itself!", "Invalid Connection", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                ResetConveyorPlacement();
+                return;
+            }
+            
+            try
+            {
+                // Create the conveyor belt
+                ConveyorBelt belt = new ConveyorBelt(
+                    conveyorSourceBuilding, 
+                    conveyorSourcePort, 
+                    building, 
+                    port
+                );
+                
+                conveyorBelts.Add(belt);
+                DrawConveyorBelt(belt);
+                
+                UpdateStatusText($"Conveyor Belt created! Click another OUTPUT port to place more, or press ESC to exit.");
+                
+                // Reset for next conveyor (but stay in placement mode)
+                conveyorSourceBuilding = null;
+                conveyorSourcePort = null;
+            }
+            catch (ArgumentException ex)
+            {
+                MessageBox.Show($"Failed to create conveyor: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ResetConveyorPlacement();
+            }
+        }
+        
+        /// <summary>
+        /// Draws a conveyor belt on the canvas
+        /// </summary>
+        private void DrawConveyorBelt(ConveyorBelt belt)
+        {
+            ConveyorBeltVisual visual = new ConveyorBeltVisual(belt);
+            
+            // Add to canvas - conveyor belts should be drawn before buildings
+            // Find the first building visual and insert before it
+            int insertIndex = 0;
+            for (int i = 0; i < MainCanvas.Children.Count; i++)
+            {
+                if (MainCanvas.Children[i] is BuildingVisual)
+                {
+                    insertIndex = i;
+                    break;
+                }
+            }
+            
+            MainCanvas.Children.Insert(insertIndex, visual);
+        }
+        
+        /// <summary>
+        /// Resets the conveyor placement state
+        /// </summary>
+        private void ResetConveyorPlacement()
+        {
+            conveyorSourceBuilding = null;
+            conveyorSourcePort = null;
+            if (isPlacingConveyor)
+            {
+                UpdateStatusText("Conveyor Placement: Click on an OUTPUT port to start");
+            }
+        }
+        
+        /// <summary>
+        /// Updates the status text display
+        /// </summary>
+        private void UpdateStatusText(string text)
+        {
+            this.Title = $"Satisfactory Planner - {text}";
         }
     }
 }
