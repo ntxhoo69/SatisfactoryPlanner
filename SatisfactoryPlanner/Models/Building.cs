@@ -65,17 +65,9 @@ public class Building
             y = tempY;
         }
         
-        // Translate back - note: for 90/270 rotations, width and height are swapped
-        if (rotationSteps % 2 == 1)
-        {
-            x += centerY;  // Swapped
-            y += centerX;  // Swapped
-        }
-        else
-        {
-            x += centerX;
-            y += centerY;
-        }
+        // Translate back to the original center
+        x += centerX;
+        y += centerY;
         
         return new Point(x, y);
     }
