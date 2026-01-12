@@ -22,6 +22,7 @@ public class BuildingVisual : Canvas
         {
             Building = building;
             CreateVisual();
+            ApplyRotation();
         }
         
         private void CreateVisual()
@@ -118,6 +119,36 @@ public class BuildingVisual : Canvas
         {
             buildingRect. Stroke = highlighted ? Brushes. Yellow : Brushes.White;
             buildingRect.StrokeThickness = highlighted ? 3 : 2;
+        }
+        
+        /// <summary>
+        /// Applies rotation transform to the building visual.
+        /// </summary>
+        private void ApplyRotation()
+        {
+            if (Building.Rotation != 0)
+            {
+                // Calculate center point for rotation
+                double centerX = Building.Type.WidthMeters * GridSize / 2;
+                double centerY = Building.Type.HeightMeters * GridSize / 2;
+                
+                // Apply rotation transform
+                RotateTransform rotateTransform = new RotateTransform(Building.Rotation, centerX, centerY);
+                this.RenderTransform = rotateTransform;
+            }
+            else
+            {
+                this.RenderTransform = null;
+            }
+        }
+        
+        /// <summary>
+        /// Updates the visual to reflect changes in the building (e.g., rotation).
+        /// </summary>
+        public void UpdateVisual()
+        {
+            // Only update rotation transform, don't rebuild entire visual
+            ApplyRotation();
         }
         
         private void PortCircle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

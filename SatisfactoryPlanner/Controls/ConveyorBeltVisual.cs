@@ -23,6 +23,9 @@ public class ConveyorBeltVisual : Canvas
     {
         ConveyorBelt = conveyorBelt;
         CreateVisual();
+        
+        // Make the belt clickable
+        this.Cursor = System.Windows.Input.Cursors.Hand;
     }
     
     private void CreateVisual()
@@ -91,6 +94,7 @@ public class ConveyorBeltVisual : Canvas
         beltPath.StrokeStartLineCap = PenLineCap.Round;
         beltPath.StrokeEndLineCap = PenLineCap.Round;
         beltPath.Opacity = 0.8;
+        beltPath.Cursor = System.Windows.Input.Cursors.Hand;
     }
     
     /// <summary>
@@ -99,5 +103,17 @@ public class ConveyorBeltVisual : Canvas
     public void UpdateVisual()
     {
         CreateVisual();
+    }
+    
+    /// <summary>
+    /// Sets the highlight state for the conveyor belt
+    /// </summary>
+    public void SetHighlight(bool highlighted)
+    {
+        if (beltPath != null)
+        {
+            beltPath.StrokeThickness = highlighted ? 5 : 3;
+            beltPath.Opacity = highlighted ? 1.0 : 0.8;
+        }
     }
 }

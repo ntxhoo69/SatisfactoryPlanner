@@ -32,8 +32,13 @@ namespace SatisfactoryPlanner
         private BuildingVisual previewBuilding = null;
         private bool isPlacingMode = false;
         
+        // Building selection
+        private Building? selectedBuilding = null;
+        private BuildingVisual? selectedBuildingVisual = null;
+        
         // Conveyor belt management
         private List<ConveyorBelt> conveyorBelts = new List<ConveyorBelt>();
+        private ConveyorBeltVisual? selectedConveyorVisual = null;
         private bool isPlacingConveyor = false;
         private Building? conveyorSourceBuilding = null;
         private IOPort? conveyorSourcePort = null;
@@ -198,12 +203,17 @@ namespace SatisfactoryPlanner
                 Point clickPosition = e.GetPosition(MainCanvas);
                 Point gridPosition = SnapToGrid(clickPosition);
         
-                // Create and place building
+                // Create and place building with current rotation
                 Building newBuilding = new Building(selectedBuildingType, gridPosition);
+                if (previewBuilding != null)
+                {
+                    newBuilding.Rotation = previewBuilding.Building.Rotation;
+                }
                 buildings.Add(newBuilding);
         
                 BuildingVisual visual = new BuildingVisual(newBuilding);
                 visual.PortClicked += BuildingVisual_PortClicked; // Subscribe to port click events
+                visual.MouseLeftButtonDown += PlacedBuilding_MouseLeftButtonDown; // Subscribe to building click events
                 Canvas.SetLeft(visual, gridPosition.X * GridSize);
                 Canvas.SetTop(visual, gridPosition.Y * GridSize);
                 MainCanvas.Children.Add(visual);
@@ -347,9 +357,36 @@ namespace SatisfactoryPlanner
                     MainCanvas.Cursor = Cursors.Arrow;
                     UpdateStatusText("Ready");
                 }
+                
+                // Deselect building/conveyor
+                if (selectedBuilding != null || selectedConveyorVisual != null)
+                {
+                    DeselectAll();
+                }
             }
-
-            //if (e.Key == Key.LeftAlt && e.Key == Key.LeftShift && e.Key == Key.R && e.Key == Key.T && e.Key == Key.N);
+            
+            // Handle R key for rotation during placement
+            if (e.Key == Key.R && isPlacingMode && previewBuilding != null)
+            {
+                previewBuilding.Building.Rotate();
+                previewBuilding.UpdateVisual();
+                e.Handled = true;
+            }
+            
+            // Handle Backspace for deletion
+            if (e.Key == Key.Back)
+            {
+                if (selectedBuilding != null && selectedBuildingVisual != null)
+                {
+                    DeleteSelectedBuilding();
+                    e.Handled = true;
+                }
+                else if (selectedConveyorVisual != null)
+                {
+                    DeleteSelectedConveyor();
+                    e.Handled = true;
+                }
+            }
         }
         
         private void SelectBuilding_Click(object sender, RoutedEventArgs e)
@@ -532,6 +569,7 @@ namespace SatisfactoryPlanner
         private void DrawConveyorBelt(ConveyorBelt belt)
         {
             ConveyorBeltVisual visual = new ConveyorBeltVisual(belt);
+            visual.MouseLeftButtonDown += ConveyorBelt_MouseLeftButtonDown;
             
             // Add to canvas - conveyor belts should be drawn before buildings
             // Find the first building visual and insert before it
@@ -567,6 +605,136 @@ namespace SatisfactoryPlanner
         private void UpdateStatusText(string text)
         {
             this.Title = $"Satisfactory Planner - {text}";
+        }
+        
+        // ========== Building Selection and Deletion Methods ==========
+        
+        /// <summary>
+        /// Handles click events on conveyor belts for selection
+        /// </summary>
+        private void ConveyorBelt_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Don't select if we're in placement or conveyor mode
+            if (isPlacingMode || isPlacingConveyor) return;
+            
+            if (sender is ConveyorBeltVisual visual)
+            {
+                SelectConveyorBelt(visual);
+                e.Handled = true;
+            }
+        }
+        
+        /// <summary>
+        /// Selects a conveyor belt and highlights it
+        /// </summary>
+        private void SelectConveyorBelt(ConveyorBeltVisual visual)
+        {
+            // Deselect previous selection
+            DeselectAll();
+            
+            selectedConveyorVisual = visual;
+            visual.SetHighlight(true);
+            
+            UpdateStatusText("Selected: Conveyor Belt - Press Backspace to delete");
+        }
+        
+        /// <summary>
+        /// Handles click events on placed buildings for selection
+        /// </summary>
+        private void PlacedBuilding_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Don't select if we're in placement or conveyor mode
+            if (isPlacingMode || isPlacingConveyor) return;
+            
+            if (sender is BuildingVisual visual)
+            {
+                SelectBuilding(visual);
+                e.Handled = true;
+            }
+        }
+        
+        /// <summary>
+        /// Selects a building and highlights it
+        /// </summary>
+        private void SelectBuilding(BuildingVisual visual)
+        {
+            // Deselect previous selection
+            DeselectAll();
+            
+            selectedBuilding = visual.Building;
+            selectedBuildingVisual = visual;
+            visual.SetHighlight(true);
+            
+            UpdateStatusText($"Selected: {visual.Building.Type.Name} - Press Backspace to delete");
+        }
+        
+        /// <summary>
+        /// Deselects all selected items
+        /// </summary>
+        private void DeselectAll()
+        {
+            if (selectedBuildingVisual != null)
+            {
+                selectedBuildingVisual.SetHighlight(false);
+                selectedBuildingVisual = null;
+            }
+            
+            if (selectedConveyorVisual != null)
+            {
+                selectedConveyorVisual.SetHighlight(false);
+                selectedConveyorVisual = null;
+            }
+            
+            selectedBuilding = null;
+            UpdateStatusText("Ready");
+        }
+        
+        /// <summary>
+        /// Deletes the currently selected building
+        /// </summary>
+        private void DeleteSelectedBuilding()
+        {
+            if (selectedBuilding == null || selectedBuildingVisual == null) return;
+            
+            // Remove any conveyor belts connected to this building
+            var connectedBelts = conveyorBelts
+                .Where(belt => belt.SourceBuilding.Id == selectedBuilding.Id || belt.TargetBuilding.Id == selectedBuilding.Id)
+                .ToList();
+                
+            foreach (var belt in connectedBelts)
+            {
+                // Find and remove the visual
+                var beltVisual = MainCanvas.Children.OfType<ConveyorBeltVisual>()
+                    .FirstOrDefault(v => v.ConveyorBelt == belt);
+                if (beltVisual != null)
+                {
+                    MainCanvas.Children.Remove(beltVisual);
+                }
+                conveyorBelts.Remove(belt);
+            }
+            
+            // Remove building from data and visual
+            buildings.Remove(selectedBuilding);
+            MainCanvas.Children.Remove(selectedBuildingVisual);
+            
+            selectedBuilding = null;
+            selectedBuildingVisual = null;
+            
+            UpdateStatusText("Building deleted");
+        }
+        
+        /// <summary>
+        /// Deletes the currently selected conveyor belt
+        /// </summary>
+        private void DeleteSelectedConveyor()
+        {
+            if (selectedConveyorVisual == null) return;
+            
+            conveyorBelts.Remove(selectedConveyorVisual.ConveyorBelt);
+            MainCanvas.Children.Remove(selectedConveyorVisual);
+            
+            selectedConveyorVisual = null;
+            UpdateStatusText("Conveyor belt deleted");
         }
     }
 }

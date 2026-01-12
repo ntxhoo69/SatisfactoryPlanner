@@ -20,27 +20,108 @@ public class Building
     // Get absolute position of a port
     public Point GetPortAbsolutePosition(IOPort port)
     {
+        Point rotatedPosition = RotatePoint(port.RelativePosition, Rotation, Type.WidthMeters, Type.HeightMeters);
         return new Point(
-            Position.X + port.RelativePosition.X,
-            Position.Y + port.RelativePosition.Y
+            Position.X + rotatedPosition.X,
+            Position.Y + rotatedPosition.Y
         );
     }
     
     /// <summary>
     /// Gets the facing direction of a port, accounting for building rotation.
-    /// For now, only supports rotation=0. Can be extended for 90/180/270 degree rotations.
+    /// Supports 0, 90, 180, 270 degree rotations.
     /// </summary>
     public Dir GetPortFacing(IOPort port)
     {
-        // TODO: Apply rotation transformation when building rotation is implemented
-        // For rotation=0, just return the port's facing directly
-        if (Rotation == 0)
+        return RotateDirection(port.Facing, Rotation);
+    }
+    
+    /// <summary>
+    /// Rotates a point around the building's center based on rotation angle.
+    /// </summary>
+    private Point RotatePoint(Point point, double rotation, double width, double height)
+    {
+        if (rotation == 0)
+            return point;
+            
+        int rotationSteps = NormalizeRotationSteps(rotation);
+        
+        double x = point.X;
+        double y = point.Y;
+        double centerX = width / 2.0;
+        double centerY = height / 2.0;
+        
+        // Translate to origin
+        x -= centerX;
+        y -= centerY;
+        
+        // Apply rotation steps (each step is 90 degrees clockwise)
+        for (int i = 0; i < rotationSteps; i++)
         {
-            return port.Facing;
+            // Rotate 90 degrees clockwise: (x, y) -> (y, -x)
+            double tempX = y;
+            double tempY = -x;
+            x = tempX;
+            y = tempY;
         }
         
-        // For future: rotate the facing by the building rotation
-        // e.g., 90° rotation: Up -> Right, Right -> Down, Down -> Left, Left -> Up
-        return port.Facing;
+        // Translate back - note: for 90/270 rotations, width and height are swapped
+        if (rotationSteps % 2 == 1)
+        {
+            x += centerY;  // Swapped
+            y += centerX;  // Swapped
+        }
+        else
+        {
+            x += centerX;
+            y += centerY;
+        }
+        
+        return new Point(x, y);
+    }
+    
+    /// <summary>
+    /// Rotates a direction based on rotation angle.
+    /// </summary>
+    private Dir RotateDirection(Dir direction, double rotation)
+    {
+        if (rotation == 0)
+            return direction;
+            
+        int rotationSteps = NormalizeRotationSteps(rotation);
+        
+        Dir result = direction;
+        for (int i = 0; i < rotationSteps; i++)
+        {
+            // Rotate 90 degrees clockwise
+            result = result switch
+            {
+                Dir.Up => Dir.Right,
+                Dir.Right => Dir.Down,
+                Dir.Down => Dir.Left,
+                Dir.Left => Dir.Up,
+                _ => result
+            };
+        }
+        
+        return result;
+    }
+    
+    /// <summary>
+    /// Normalizes rotation angle to steps (0-3) where each step is 90 degrees.
+    /// </summary>
+    private int NormalizeRotationSteps(double rotation)
+    {
+        int rotationSteps = ((int)(rotation / 90)) % 4;
+        if (rotationSteps < 0) rotationSteps += 4;
+        return rotationSteps;
+    }
+    
+    /// <summary>
+    /// Rotates the building by 90 degrees clockwise.
+    /// </summary>
+    public void Rotate()
+    {
+        Rotation = (Rotation + 90) % 360;
     }
 }
