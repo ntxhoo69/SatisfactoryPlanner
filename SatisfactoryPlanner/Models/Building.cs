@@ -38,6 +38,9 @@ public class Building
     
     /// <summary>
     /// Rotates a point around the building's center based on rotation angle.
+    /// The building rotates in place around its center point, which remains constant
+    /// regardless of rotation. This matches the WPF RenderTransform behavior where
+    /// the visual rotates around the center of the original dimensions.
     /// </summary>
     private Point RotatePoint(Point point, double rotation, double width, double height)
     {
