@@ -111,9 +111,9 @@ public static class BuildingTypes
         double y = portPosition.Y;
         
         // Calculate distances to each edge
-        double distToLeft = Math.Abs(x - 0);
+        double distToLeft = Math.Abs(x);
         double distToRight = Math.Abs(x - buildingWidth);
-        double distToTop = Math.Abs(y - 0);
+        double distToTop = Math.Abs(y);
         double distToBottom = Math.Abs(y - buildingHeight);
         
         // Find the minimum distance to determine which edge the port is on

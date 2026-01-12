@@ -34,7 +34,7 @@ public class Building
     {
         // TODO: Apply rotation transformation when building rotation is implemented
         // For rotation=0, just return the port's facing directly
-        if (Math.Abs(Rotation) < 0.01)
+        if (Rotation == 0)
         {
             return port.Facing;
         }
