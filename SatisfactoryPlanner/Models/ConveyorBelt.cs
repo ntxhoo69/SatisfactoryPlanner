@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 
 namespace SatisfactoryPlanner.Models;
@@ -16,7 +17,7 @@ public class ConveyorBelt
 
     public ConveyorBelt(Building sourceBuilding, IOPort sourcePort, Building targetBuilding, IOPort targetPort)
     {
-        Id = System.Guid.NewGuid().ToString();
+        Id = Guid.NewGuid().ToString();
         SourceBuilding = sourceBuilding;
         SourcePort = sourcePort;
         TargetBuilding = targetBuilding;

@@ -43,7 +43,7 @@ public class ConveyorBeltVisual : Polyline
         
         if (length > 0)
         {
-            // Perpendicular offset (10% of distance)
+            // Perpendicular offset (5% of distance)
             double offsetAmount = length * 0.05;
             double perpX = -dy / length * offsetAmount;
             double perpY = dx / length * offsetAmount;

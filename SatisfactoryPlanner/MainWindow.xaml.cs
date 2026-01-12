@@ -316,7 +316,7 @@ namespace SatisfactoryPlanner
             }
     
             Canvas.SetLeft(previewBuilding, gridPosition.X * GridSize);
-            Canvas.SetTop(previewBuilding, gridPosition. Y * GridSize);
+            Canvas.SetTop(previewBuilding, gridPosition.Y * GridSize);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
