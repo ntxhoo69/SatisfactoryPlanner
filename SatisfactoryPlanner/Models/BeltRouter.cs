@@ -28,9 +28,10 @@ public static class BeltRouter
             return new List<Point>();
         }
         
-        // Snap to grid (optional but helps with alignment)
-        Point start = SnapToGrid(startPx, gridSize);
-        Point end = SnapToGrid(endPx, gridSize);
+        // Don't snap start and end points - they are already at the correct port positions
+        // Ports can be at sub-grid positions (e.g., 4.5 meters), so snapping would cause misalignment
+        Point start = startPx;
+        Point end = endPx;
         
         // Create lead points: extend from start/end in facing directions
         double leadDistance = gridSize * 1.0; // One grid unit

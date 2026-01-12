@@ -38,6 +38,9 @@ public class Building
     
     /// <summary>
     /// Rotates a point around the building's center based on rotation angle.
+    /// The building rotates in place around its center point, which remains constant
+    /// regardless of rotation. This matches the WPF RenderTransform behavior where
+    /// the visual rotates around the center of the original dimensions.
     /// </summary>
     private Point RotatePoint(Point point, double rotation, double width, double height)
     {
@@ -58,9 +61,9 @@ public class Building
         // Apply rotation steps (each step is 90 degrees clockwise)
         for (int i = 0; i < rotationSteps; i++)
         {
-            // Rotate 90 degrees clockwise: (x, y) -> (y, -x)
-            double tempX = y;
-            double tempY = -x;
+            // Rotate 90 degrees clockwise in screen coordinates (Y-axis points down): (x, y) -> (-y, x)
+            double tempX = -y;
+            double tempY = x;
             x = tempX;
             y = tempY;
         }
