@@ -18,6 +18,7 @@ public class ConveyorBeltVisual : Canvas
     
     public ConveyorBelt ConveyorBelt { get; private set; }
     private Path beltPath;
+    private TextBlock trafficLabel;
     
     public ConveyorBeltVisual(ConveyorBelt conveyorBelt)
     {
@@ -80,13 +81,32 @@ public class ConveyorBeltVisual : Canvas
         
         beltPath.Data = geometry;
         
-        // Style the conveyor belt based on resource type
-        Color beltColor = ConveyorBelt.SourcePort.ResourceType switch
+        // Style the conveyor belt based on validity and resource type
+        UpdateBeltStyle();
+        
+        // Add or update traffic label
+        UpdateTrafficLabel(routePoints);
+    }
+    
+    private void UpdateBeltStyle()
+    {
+        if (beltPath == null) return;
+        
+        // Choose color based on validity
+        Color beltColor;
+        if (!ConveyorBelt.IsValid)
         {
-            ResourceType.Solid => Colors.Yellow,
-            ResourceType.Fluid => Colors.Cyan,
-            _ => Colors.Orange
-        };
+            beltColor = Colors.Red; // Invalid connection
+        }
+        else
+        {
+            beltColor = ConveyorBelt.SourcePort.ResourceType switch
+            {
+                ResourceType.Solid => Colors.Yellow,
+                ResourceType.Fluid => Colors.Cyan,
+                _ => Colors.Orange
+            };
+        }
         
         beltPath.Stroke = new SolidColorBrush(beltColor);
         beltPath.StrokeThickness = 3;
@@ -97,8 +117,47 @@ public class ConveyorBeltVisual : Canvas
         beltPath.Cursor = System.Windows.Input.Cursors.Hand;
     }
     
+    private void UpdateTrafficLabel(List<Point> routePoints)
+    {
+        if (routePoints.Count < 2) return;
+        
+        // Calculate midpoint of the belt path
+        int midIndex = routePoints.Count / 2;
+        Point midPoint = routePoints[midIndex];
+        
+        // Create or update traffic label
+        if (trafficLabel == null)
+        {
+            trafficLabel = new TextBlock
+            {
+                FontSize = 10,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.White,
+                Background = new SolidColorBrush(Colors.Black) { Opacity = 0.7 },
+                Padding = new Thickness(2)
+            };
+            this.Children.Add(trafficLabel);
+        }
+        
+        // Update traffic text
+        if (!string.IsNullOrEmpty(ConveyorBelt.ItemName) && ConveyorBelt.ItemsPerMinute > 0)
+        {
+            trafficLabel.Text = $"{ConveyorBelt.ItemName}: {ConveyorBelt.ItemsPerMinute:F1}/min";
+            trafficLabel.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            trafficLabel.Text = "No traffic";
+            trafficLabel.Visibility = Visibility.Collapsed;
+        }
+        
+        // Position the label at the midpoint
+        Canvas.SetLeft(trafficLabel, midPoint.X + 5);
+        Canvas.SetTop(trafficLabel, midPoint.Y - 15);
+    }
+    
     /// <summary>
-    /// Updates the visual when building positions change
+    /// Updates the visual when building positions change or traffic changes
     /// </summary>
     public void UpdateVisual()
     {

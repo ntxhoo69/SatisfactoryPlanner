@@ -8,6 +8,11 @@ public class Building
     public BuildingType Type { get; set; }
     public Point Position { get; set; } // Position in meters on the grid
     public double Rotation { get; set; } // For future rotation support
+    
+    // Recipe and production management
+    public Recipe? SelectedRecipe { get; set; }
+    public string? SourceItemName { get; set; } // For source buildings only
+    public double SourceItemRate { get; set; } // Items per minute for source buildings
         
     public Building(BuildingType type, Point position)
     {
@@ -15,6 +20,7 @@ public class Building
         Type = type;
         Position = position;
         Rotation = 0;
+        SourceItemRate = 60.0; // Default 60 items/min
     }
         
     // Get absolute position of a port
@@ -34,6 +40,14 @@ public class Building
     public Dir GetPortFacing(IOPort port)
     {
         return RotateDirection(port.Facing, Rotation);
+    }
+    
+    /// <summary>
+    /// Checks if this building is a source building (provides items without input)
+    /// </summary>
+    public bool IsSource()
+    {
+        return Type.Id.Equals("source", StringComparison.OrdinalIgnoreCase);
     }
     
     /// <summary>
