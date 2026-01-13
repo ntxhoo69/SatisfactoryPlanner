@@ -518,6 +518,22 @@
           "label": "Power"
         }
       ]
+    },
+    {
+      "id": "source",
+      "name": "Item Source",
+      "widthMeters": 3,
+      "heightMeters": 3,
+      "color": "LightGreen",
+      "ports": [
+        {
+          "portType": "Output",
+          "resourceType": "Solid",
+          "x": 3,
+          "y": 1.5,
+          "label": "Output"
+        }
+      ]
     }
   ]
 }

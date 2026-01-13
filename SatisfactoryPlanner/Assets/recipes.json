@@ -1,7 +1,176 @@
-﻿{
+{
   "recipes": [
     {
-      
+      "id": "iron_ingot",
+      "name": "Iron Ingot",
+      "buildingId": "smelter",
+      "inputs": [
+        { "itemName": "Iron Ore", "quantity": 1 }
+      ],
+      "outputs": [
+        { "itemName": "Iron Ingot", "quantity": 1 }
+      ],
+      "craftingTimeSeconds": 2.0
+    },
+    {
+      "id": "copper_ingot",
+      "name": "Copper Ingot",
+      "buildingId": "smelter",
+      "inputs": [
+        { "itemName": "Copper Ore", "quantity": 1 }
+      ],
+      "outputs": [
+        { "itemName": "Copper Ingot", "quantity": 1 }
+      ],
+      "craftingTimeSeconds": 2.0
+    },
+    {
+      "id": "iron_rod",
+      "name": "Iron Rod",
+      "buildingId": "constructor",
+      "inputs": [
+        { "itemName": "Iron Ingot", "quantity": 1 }
+      ],
+      "outputs": [
+        { "itemName": "Iron Rod", "quantity": 1 }
+      ],
+      "craftingTimeSeconds": 4.0
+    },
+    {
+      "id": "iron_plate",
+      "name": "Iron Plate",
+      "buildingId": "constructor",
+      "inputs": [
+        { "itemName": "Iron Ingot", "quantity": 3 }
+      ],
+      "outputs": [
+        { "itemName": "Iron Plate", "quantity": 2 }
+      ],
+      "craftingTimeSeconds": 6.0
+    },
+    {
+      "id": "screw",
+      "name": "Screw",
+      "buildingId": "constructor",
+      "inputs": [
+        { "itemName": "Iron Rod", "quantity": 1 }
+      ],
+      "outputs": [
+        { "itemName": "Screw", "quantity": 4 }
+      ],
+      "craftingTimeSeconds": 6.0
+    },
+    {
+      "id": "wire",
+      "name": "Wire",
+      "buildingId": "constructor",
+      "inputs": [
+        { "itemName": "Copper Ingot", "quantity": 1 }
+      ],
+      "outputs": [
+        { "itemName": "Wire", "quantity": 2 }
+      ],
+      "craftingTimeSeconds": 4.0
+    },
+    {
+      "id": "cable",
+      "name": "Cable",
+      "buildingId": "constructor",
+      "inputs": [
+        { "itemName": "Wire", "quantity": 2 }
+      ],
+      "outputs": [
+        { "itemName": "Cable", "quantity": 1 }
+      ],
+      "craftingTimeSeconds": 2.0
+    },
+    {
+      "id": "reinforced_iron_plate",
+      "name": "Reinforced Iron Plate",
+      "buildingId": "assembler",
+      "inputs": [
+        { "itemName": "Iron Plate", "quantity": 6 },
+        { "itemName": "Screw", "quantity": 12 }
+      ],
+      "outputs": [
+        { "itemName": "Reinforced Iron Plate", "quantity": 1 }
+      ],
+      "craftingTimeSeconds": 12.0
+    },
+    {
+      "id": "rotor",
+      "name": "Rotor",
+      "buildingId": "assembler",
+      "inputs": [
+        { "itemName": "Iron Rod", "quantity": 5 },
+        { "itemName": "Screw", "quantity": 25 }
+      ],
+      "outputs": [
+        { "itemName": "Rotor", "quantity": 1 }
+      ],
+      "craftingTimeSeconds": 15.0
+    },
+    {
+      "id": "modular_frame",
+      "name": "Modular Frame",
+      "buildingId": "assembler",
+      "inputs": [
+        { "itemName": "Reinforced Iron Plate", "quantity": 3 },
+        { "itemName": "Iron Rod", "quantity": 12 }
+      ],
+      "outputs": [
+        { "itemName": "Modular Frame", "quantity": 2 }
+      ],
+      "craftingTimeSeconds": 60.0
+    },
+    {
+      "id": "steel_ingot",
+      "name": "Steel Ingot",
+      "buildingId": "foundry",
+      "inputs": [
+        { "itemName": "Iron Ore", "quantity": 3 },
+        { "itemName": "Coal", "quantity": 3 }
+      ],
+      "outputs": [
+        { "itemName": "Steel Ingot", "quantity": 3 }
+      ],
+      "craftingTimeSeconds": 4.0
+    },
+    {
+      "id": "steel_beam",
+      "name": "Steel Beam",
+      "buildingId": "constructor",
+      "inputs": [
+        { "itemName": "Steel Ingot", "quantity": 4 }
+      ],
+      "outputs": [
+        { "itemName": "Steel Beam", "quantity": 1 }
+      ],
+      "craftingTimeSeconds": 4.0
+    },
+    {
+      "id": "steel_pipe",
+      "name": "Steel Pipe",
+      "buildingId": "constructor",
+      "inputs": [
+        { "itemName": "Steel Ingot", "quantity": 3 }
+      ],
+      "outputs": [
+        { "itemName": "Steel Pipe", "quantity": 2 }
+      ],
+      "craftingTimeSeconds": 6.0
+    },
+    {
+      "id": "concrete",
+      "name": "Concrete",
+      "buildingId": "constructor",
+      "inputs": [
+        { "itemName": "Limestone", "quantity": 3 }
+      ],
+      "outputs": [
+        { "itemName": "Concrete", "quantity": 1 }
+      ],
+      "craftingTimeSeconds": 4.0
     }
   ]
 }

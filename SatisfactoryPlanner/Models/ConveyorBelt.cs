@@ -14,6 +14,11 @@ public class ConveyorBelt
     public IOPort SourcePort { get; set; }
     public Building TargetBuilding { get; set; }
     public IOPort TargetPort { get; set; }
+    
+    // Traffic tracking
+    public string? ItemName { get; set; } // What item is being transported
+    public double ItemsPerMinute { get; set; } // Flow rate
+    public bool IsValid { get; set; } // Whether the connection is valid (matches types, has sufficient input)
 
     public ConveyorBelt(Building sourceBuilding, IOPort sourcePort, Building targetBuilding, IOPort targetPort)
     {
@@ -22,6 +27,8 @@ public class ConveyorBelt
         SourcePort = sourcePort;
         TargetBuilding = targetBuilding;
         TargetPort = targetPort;
+        IsValid = true;
+        ItemsPerMinute = 0;
         
         // Validate that source is Output and target is Input
         if (sourcePort.Type != PortType.Output)

@@ -14,6 +14,8 @@ public class BuildingVisual : Canvas
         
         public Building Building { get; private set; }
         private Rectangle buildingRect;
+        private TextBlock nameLabel;
+        private TextBlock recipeLabel;
         
         // Event raised when a port is clicked
         public event EventHandler<PortClickedEventArgs>? PortClicked;
@@ -42,7 +44,7 @@ public class BuildingVisual : Canvas
             this.Children.Add(buildingRect);
             
             // Building name label
-            TextBlock nameLabel = new TextBlock
+            nameLabel = new TextBlock
             {
                 Text = Building. Type.Name,
                 Foreground = Brushes.White,
@@ -52,13 +54,47 @@ public class BuildingVisual : Canvas
                 Width = this.Width
             };
             Canvas.SetLeft(nameLabel, 0);
-            Canvas.SetTop(nameLabel, (this.Height / 2) - 10);
+            Canvas.SetTop(nameLabel, (this.Height / 2) - 20);
             this.Children.Add(nameLabel);
+            
+            // Recipe label (if recipe selected)
+            recipeLabel = new TextBlock
+            {
+                Foreground = Brushes.LightGreen,
+                FontSize = 9,
+                TextAlignment = TextAlignment.Center,
+                Width = this.Width
+            };
+            Canvas.SetLeft(recipeLabel, 0);
+            Canvas.SetTop(recipeLabel, (this.Height / 2) - 5);
+            this.Children.Add(recipeLabel);
+            
+            UpdateRecipeDisplay();
             
             // Draw ports
             foreach (var port in Building.Type. Ports)
             {
                 DrawPort(port);
+            }
+        }
+        
+        public void UpdateRecipeDisplay()
+        {
+            if (recipeLabel == null) return;
+            
+            if (Building.IsSource() && !string.IsNullOrEmpty(Building.SourceItemName))
+            {
+                recipeLabel.Text = $"{Building.SourceItemName}\n{Building.SourceItemRate:F1}/min";
+                recipeLabel.Visibility = Visibility.Visible;
+            }
+            else if (Building.SelectedRecipe != null)
+            {
+                recipeLabel.Text = Building.SelectedRecipe.Name;
+                recipeLabel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                recipeLabel.Visibility = Visibility.Collapsed;
             }
         }
         
@@ -143,12 +179,13 @@ public class BuildingVisual : Canvas
         }
         
         /// <summary>
-        /// Updates the visual to reflect changes in the building (e.g., rotation).
+        /// Updates the visual to reflect changes in the building (e.g., rotation, recipe).
         /// </summary>
         public void UpdateVisual()
         {
-            // Only update rotation transform, don't rebuild entire visual
+            // Only update rotation transform and recipe, don't rebuild entire visual
             ApplyRotation();
+            UpdateRecipeDisplay();
         }
         
         private void PortCircle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

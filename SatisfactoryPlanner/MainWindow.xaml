@@ -13,6 +13,21 @@
             <ToolBarTray DockPanel.Dock="Right" Background="#FF3C3C3C" Orientation="Vertical">
                 <ToolBar x:Name="BuildingToolBar" Background="#FF3C3C3C">
                 </ToolBar>
+                
+                <!-- Help Panel -->
+                <Border Background="#FF2B2B2B" BorderBrush="#FF555555" BorderThickness="1" Margin="5" Padding="10">
+                    <StackPanel>
+                        <TextBlock Foreground="Yellow" FontWeight="Bold" FontSize="12" Margin="0,0,0,5">Quick Help:</TextBlock>
+                        <TextBlock Foreground="White" FontSize="10" TextWrapping="Wrap">
+                            <Run>• Double-click buildings to select recipes</Run><LineBreak/>
+                            <Run>• Double-click Source to configure item/rate</Run><LineBreak/>
+                            <Run>• Yellow belts = valid, Red = invalid</Run><LineBreak/>
+                            <Run>• Traffic shows on belt midpoint</Run><LineBreak/>
+                            <Run>• R = rotate, Backspace = delete</Run><LineBreak/>
+                            <Run>• Right-drag = pan, Wheel = zoom</Run>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
             </ToolBarTray>
             
             <StatusBar DockPanel.Dock="Bottom" Background="#FF3C3C3C">

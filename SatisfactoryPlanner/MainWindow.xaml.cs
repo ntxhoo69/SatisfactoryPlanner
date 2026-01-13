@@ -8,6 +8,7 @@ using SatisfactoryPlanner.Data;
 using System.Collections.Generic;
 using SatisfactoryPlanner.Controls;
 using SatisfactoryPlanner.Models;
+using System.Linq;
 
 namespace SatisfactoryPlanner
 {
@@ -549,6 +550,9 @@ namespace SatisfactoryPlanner
                 conveyorBelts.Add(belt);
                 DrawConveyorBelt(belt);
                 
+                // Recalculate production after adding belt
+                RecalculateProduction();
+                
                 UpdateStatusText($"Conveyor Belt created! Click another OUTPUT port to place more, or press ESC to exit.");
                 
                 // Reset for next conveyor (but stay in placement mode)
@@ -649,6 +653,13 @@ namespace SatisfactoryPlanner
             if (sender is BuildingVisual visual)
             {
                 SelectBuilding(visual);
+                
+                // Double-click to configure
+                if (e.ClickCount == 2)
+                {
+                    ConfigureBuilding(visual.Building, visual);
+                }
+                
                 e.Handled = true;
             }
         }
@@ -721,6 +732,9 @@ namespace SatisfactoryPlanner
             selectedBuildingVisual = null;
             
             UpdateStatusText("Building deleted");
+            
+            // Recalculate production after deletion
+            RecalculateProduction();
         }
         
         /// <summary>
@@ -735,6 +749,63 @@ namespace SatisfactoryPlanner
             
             selectedConveyorVisual = null;
             UpdateStatusText("Conveyor belt deleted");
+            
+            // Recalculate production after deletion
+            RecalculateProduction();
+        }
+        
+        /// <summary>
+        /// Configures a building (recipe selection or source configuration)
+        /// </summary>
+        private void ConfigureBuilding(Building building, BuildingVisual visual)
+        {
+            if (building.IsSource())
+            {
+                // Configure source node
+                var dialog = new SourceConfigDialog(building);
+                if (dialog.ShowDialog() == true)
+                {
+                    building.SourceItemName = dialog.ItemName;
+                    building.SourceItemRate = dialog.ItemRate;
+                    visual.UpdateVisual();
+                    RecalculateProduction();
+                    UpdateStatusText($"Source configured: {building.SourceItemName} at {building.SourceItemRate:F1}/min");
+                }
+            }
+            else
+            {
+                // Select recipe
+                var recipes = RecipeTypes.GetRecipesForBuilding(building.Type.Id);
+                if (recipes.Count == 0)
+                {
+                    MessageBox.Show($"No recipes available for {building.Type.Name}.", "No Recipes", 
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                
+                var dialog = new RecipeSelectionDialog(building.Type.Id);
+                if (dialog.ShowDialog() == true && dialog.SelectedRecipe != null)
+                {
+                    building.SelectedRecipe = dialog.SelectedRecipe;
+                    visual.UpdateVisual();
+                    RecalculateProduction();
+                    UpdateStatusText($"Recipe selected: {building.SelectedRecipe.Name}");
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Recalculates production for all buildings and conveyor belts
+        /// </summary>
+        private void RecalculateProduction()
+        {
+            ProductionCalculator.RecalculateAll(buildings, conveyorBelts);
+            
+            // Update all conveyor belt visuals
+            foreach (var visual in MainCanvas.Children.OfType<ConveyorBeltVisual>())
+            {
+                visual.UpdateVisual();
+            }
         }
     }
 }
