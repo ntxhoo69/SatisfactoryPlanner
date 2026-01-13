@@ -1,5 +1,7 @@
+using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using SatisfactoryPlanner.dto;
@@ -11,8 +13,8 @@ public static class RecipeTypes
 {
     private static List<Recipe>? _recipes;
 
-    private static readonly string DefaultJsonPath =
-        @"C:\Users\bedynelu\Documents\RIDER .NET\SatisfactoryPlanner\SatisfactoryPlanner\Assets\recipes.json";
+    // Remove hard-coded path, will use relative path resolution
+    private static readonly string DefaultJsonPath = "Assets/recipes.json";
 
     public static List<Recipe> GetAll()
     {

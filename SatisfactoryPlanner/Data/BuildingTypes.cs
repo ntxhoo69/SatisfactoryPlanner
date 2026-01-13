@@ -13,8 +13,8 @@ public static class BuildingTypes
 {
     private static List<BuildingType>? _types;
 
-    private static readonly string DefaultJsonPath =
-        @"C:\Users\bedynelu\Documents\RIDER .NET\SatisfactoryPlanner\SatisfactoryPlanner\Assets\buildings.json";
+    // Use relative path for portability
+    private static readonly string DefaultJsonPath = "Assets/buildings.json";
 
     public static List<BuildingType> GetAll()
     {

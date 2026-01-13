@@ -732,6 +732,9 @@ namespace SatisfactoryPlanner
             selectedBuildingVisual = null;
             
             UpdateStatusText("Building deleted");
+            
+            // Recalculate production after deletion
+            RecalculateProduction();
         }
         
         /// <summary>
