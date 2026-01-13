@@ -113,17 +113,34 @@ public static class ProductionCalculator
         if (inputBelts.Count == 0 || outputBelts.Count == 0)
             return;
         
-        // Get total input (sum all input belts)
-        double totalInput = inputBelts.Sum(b => b.ItemsPerMinute);
-        string? inputItemName = inputBelts.FirstOrDefault()?.ItemName;
+        // Get the first input item name as reference
+        string? referenceItemName = inputBelts.FirstOrDefault()?.ItemName;
+        
+        // Check if all inputs have the same item type and calculate total
+        double totalInput = 0;
+        bool allSameType = true;
+        
+        foreach (var belt in inputBelts)
+        {
+            if (belt.ItemName != null && belt.ItemName.Equals(referenceItemName, StringComparison.OrdinalIgnoreCase))
+            {
+                totalInput += belt.ItemsPerMinute;
+            }
+            else if (belt.ItemName != null)
+            {
+                allSameType = false;
+            }
+        }
         
         // Divide equally among connected outputs
         double outputPerBelt = totalInput / outputBelts.Count;
         
         foreach (var belt in outputBelts)
         {
-            belt.ItemName = inputItemName;
+            belt.ItemName = referenceItemName;
             belt.ItemsPerMinute = outputPerBelt;
+            // Mark as invalid if mixed item types
+            belt.IsValid = allSameType;
         }
     }
     
@@ -163,11 +180,8 @@ public static class ProductionCalculator
         {
             belt.ItemName = referenceItemName;
             belt.ItemsPerMinute = totalOutput;
-            // Mark as invalid if mixed item types
-            if (!allSameType)
-            {
-                belt.IsValid = false;
-            }
+            // Mark as valid or invalid based on whether all inputs are the same type
+            belt.IsValid = allSameType;
         }
     }
     
