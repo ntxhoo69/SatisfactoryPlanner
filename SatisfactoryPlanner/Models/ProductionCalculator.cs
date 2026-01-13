@@ -113,8 +113,12 @@ public static class ProductionCalculator
         if (inputBelts.Count == 0 || outputBelts.Count == 0)
             return;
         
-        // Get the first input item name as reference
-        string? referenceItemName = inputBelts.FirstOrDefault()?.ItemName;
+        // Get the first non-null input item name as reference
+        string? referenceItemName = inputBelts.FirstOrDefault(b => b.ItemName != null)?.ItemName;
+        
+        // If no belts have items yet, nothing to output
+        if (referenceItemName == null)
+            return;
         
         // Check if all inputs have the same item type and calculate total
         double totalInput = 0;
@@ -122,11 +126,16 @@ public static class ProductionCalculator
         
         foreach (var belt in inputBelts)
         {
-            if (belt.ItemName != null && belt.ItemName.Equals(referenceItemName, StringComparison.OrdinalIgnoreCase))
+            if (belt.ItemName == null)
+            {
+                // Empty belts don't affect validation but don't contribute to flow
+                continue;
+            }
+            else if (belt.ItemName.Equals(referenceItemName, StringComparison.OrdinalIgnoreCase))
             {
                 totalInput += belt.ItemsPerMinute;
             }
-            else if (belt.ItemName != null)
+            else
             {
                 allSameType = false;
             }
@@ -156,8 +165,12 @@ public static class ProductionCalculator
         if (inputBelts.Count == 0 || outputBelts.Count == 0)
             return;
         
-        // Get the first input item name as reference
-        string? referenceItemName = inputBelts.FirstOrDefault()?.ItemName;
+        // Get the first non-null input item name as reference
+        string? referenceItemName = inputBelts.FirstOrDefault(b => b.ItemName != null)?.ItemName;
+        
+        // If no belts have items yet, nothing to output
+        if (referenceItemName == null)
+            return;
         
         // Sum all inputs (only those with same item type)
         double totalOutput = 0;
@@ -165,11 +178,16 @@ public static class ProductionCalculator
         
         foreach (var belt in inputBelts)
         {
-            if (belt.ItemName != null && belt.ItemName.Equals(referenceItemName, StringComparison.OrdinalIgnoreCase))
+            if (belt.ItemName == null)
+            {
+                // Empty belts don't affect validation but don't contribute to flow
+                continue;
+            }
+            else if (belt.ItemName.Equals(referenceItemName, StringComparison.OrdinalIgnoreCase))
             {
                 totalOutput += belt.ItemsPerMinute;
             }
-            else if (belt.ItemName != null)
+            else
             {
                 allSameType = false;
             }
