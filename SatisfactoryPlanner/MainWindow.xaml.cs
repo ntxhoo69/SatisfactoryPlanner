@@ -772,6 +772,12 @@ namespace SatisfactoryPlanner
                     UpdateStatusText($"Source configured: {building.SourceItemName} at {building.SourceItemRate:F1}/min");
                 }
             }
+            else if (building.IsSplitter() || building.IsMerger())
+            {
+                // Splitters and Mergers don't need configuration - they work automatically
+                MessageBox.Show($"{building.Type.Name} automatically handles item flow. No configuration needed.", 
+                    "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
             else
             {
                 // Select recipe

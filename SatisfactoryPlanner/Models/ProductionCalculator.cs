@@ -52,6 +52,20 @@ public static class ProductionCalculator
             return;
         }
         
+        // Splitter: divides one input into multiple outputs
+        if (building.IsSplitter())
+        {
+            CalculateSplitterOutput(building, conveyorBelts);
+            return;
+        }
+        
+        // Merger: combines multiple inputs into one output
+        if (building.IsMerger())
+        {
+            CalculateMergerOutput(building, conveyorBelts);
+            return;
+        }
+        
         // Buildings with recipes
         if (building.SelectedRecipe == null)
         {
@@ -83,6 +97,76 @@ public static class ProductionCalculator
             {
                 belt.ItemName = output.ItemName;
                 belt.ItemsPerMinute = outputRate;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Calculates splitter output: divides input equally among connected outputs
+    /// </summary>
+    private static void CalculateSplitterOutput(Building building, List<ConveyorBelt> conveyorBelts)
+    {
+        var inputBelts = conveyorBelts.Where(b => b.TargetBuilding.Id == building.Id).ToList();
+        var outputBelts = conveyorBelts.Where(b => b.SourceBuilding.Id == building.Id).ToList();
+        
+        // If no input or no output, nothing to do
+        if (inputBelts.Count == 0 || outputBelts.Count == 0)
+            return;
+        
+        // Get total input (sum all input belts)
+        double totalInput = inputBelts.Sum(b => b.ItemsPerMinute);
+        string? inputItemName = inputBelts.FirstOrDefault()?.ItemName;
+        
+        // Divide equally among connected outputs
+        double outputPerBelt = totalInput / outputBelts.Count;
+        
+        foreach (var belt in outputBelts)
+        {
+            belt.ItemName = inputItemName;
+            belt.ItemsPerMinute = outputPerBelt;
+        }
+    }
+    
+    /// <summary>
+    /// Calculates merger output: sums all inputs into one output
+    /// </summary>
+    private static void CalculateMergerOutput(Building building, List<ConveyorBelt> conveyorBelts)
+    {
+        var inputBelts = conveyorBelts.Where(b => b.TargetBuilding.Id == building.Id).ToList();
+        var outputBelts = conveyorBelts.Where(b => b.SourceBuilding.Id == building.Id).ToList();
+        
+        // If no input or no output, nothing to do
+        if (inputBelts.Count == 0 || outputBelts.Count == 0)
+            return;
+        
+        // Get the first input item name as reference
+        string? referenceItemName = inputBelts.FirstOrDefault()?.ItemName;
+        
+        // Sum all inputs (only those with same item type)
+        double totalOutput = 0;
+        bool allSameType = true;
+        
+        foreach (var belt in inputBelts)
+        {
+            if (belt.ItemName != null && belt.ItemName.Equals(referenceItemName, StringComparison.OrdinalIgnoreCase))
+            {
+                totalOutput += belt.ItemsPerMinute;
+            }
+            else if (belt.ItemName != null)
+            {
+                allSameType = false;
+            }
+        }
+        
+        // Set output on all output belts (usually just one for merger)
+        foreach (var belt in outputBelts)
+        {
+            belt.ItemName = referenceItemName;
+            belt.ItemsPerMinute = totalOutput;
+            // Mark as invalid if mixed item types
+            if (!allSameType)
+            {
+                belt.IsValid = false;
             }
         }
     }
@@ -125,6 +209,13 @@ public static class ProductionCalculator
     /// </summary>
     private static void ValidateConveyorBelt(ConveyorBelt belt, List<Building> allBuildings, List<ConveyorBelt> allBelts)
     {
+        // Skip validation for splitters and mergers - they handle any item type
+        if (belt.TargetBuilding.IsSplitter() || belt.TargetBuilding.IsMerger())
+        {
+            belt.IsValid = true;
+            return;
+        }
+        
         // Check if the target building needs this item
         if (!belt.TargetBuilding.IsSource() && belt.TargetBuilding.SelectedRecipe != null)
         {
