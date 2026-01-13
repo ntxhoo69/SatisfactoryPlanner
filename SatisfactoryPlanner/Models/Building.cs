@@ -52,6 +52,22 @@ public class Building
     }
     
     /// <summary>
+    /// Checks if this building is a splitter (divides one input into multiple outputs)
+    /// </summary>
+    public bool IsSplitter()
+    {
+        return Type.Id.Equals("splitter", StringComparison.OrdinalIgnoreCase);
+    }
+    
+    /// <summary>
+    /// Checks if this building is a merger (combines multiple inputs into one output)
+    /// </summary>
+    public bool IsMerger()
+    {
+        return Type.Id.Equals("merger", StringComparison.OrdinalIgnoreCase);
+    }
+    
+    /// <summary>
     /// Rotates a point around the building's center based on rotation angle.
     /// The building rotates in place around its center point, which remains constant
     /// regardless of rotation. This matches the WPF RenderTransform behavior where

@@ -534,6 +534,80 @@
           "label": "Output"
         }
       ]
+    },
+    {
+      "id": "splitter",
+      "name": "Splitter",
+      "widthMeters": 4,
+      "heightMeters": 4,
+      "color": "Teal",
+      "ports": [
+        {
+          "portType": "Input",
+          "resourceType": "Solid",
+          "x": 0,
+          "y": 2,
+          "label": "Input"
+        },
+        {
+          "portType": "Output",
+          "resourceType": "Solid",
+          "x": 4,
+          "y": 0.8,
+          "label": "Output 1"
+        },
+        {
+          "portType": "Output",
+          "resourceType": "Solid",
+          "x": 4,
+          "y": 2,
+          "label": "Output 2"
+        },
+        {
+          "portType": "Output",
+          "resourceType": "Solid",
+          "x": 4,
+          "y": 3.2,
+          "label": "Output 3"
+        }
+      ]
+    },
+    {
+      "id": "merger",
+      "name": "Merger",
+      "widthMeters": 4,
+      "heightMeters": 4,
+      "color": "DarkCyan",
+      "ports": [
+        {
+          "portType": "Input",
+          "resourceType": "Solid",
+          "x": 0,
+          "y": 0.8,
+          "label": "Input 1"
+        },
+        {
+          "portType": "Input",
+          "resourceType": "Solid",
+          "x": 0,
+          "y": 2,
+          "label": "Input 2"
+        },
+        {
+          "portType": "Input",
+          "resourceType": "Solid",
+          "x": 0,
+          "y": 3.2,
+          "label": "Input 3"
+        },
+        {
+          "portType": "Output",
+          "resourceType": "Solid",
+          "x": 4,
+          "y": 2,
+          "label": "Output"
+        }
+      ]
     }
   ]
 }
