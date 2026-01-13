@@ -3,29 +3,22 @@
     {
       "id": "smelter",
       "name": "Smelter",
-      "widthMeters": 6,
+      "widthMeters": 5,
       "heightMeters":  9,
       "color": "DarkOrange",
       "ports": [
         {
           "portType": "Input",
           "resourceType": "Solid",
-          "x": 0,
-          "y": 4.5,
+          "x": 2.5,
+          "y": 9,
           "label": "Ore In"
-        },
-        {
-          "portType": "Input",
-          "resourceType": "Solid",
-          "x":  3,
-          "y": 0,
-          "label": "Power"
         },
         {
           "portType": "Output",
           "resourceType": "Solid",
-          "x": 6,
-          "y": 4.5,
+          "x": 2.5,
+          "y": 0,
           "label":  "Ingot Out"
         }
       ]
